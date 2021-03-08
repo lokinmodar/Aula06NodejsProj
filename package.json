@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node ./src/index.js",
-    "start:dev": "cross-env NODE_ENV=development nodemon ./src/index.js"
+    "start:dev": "cross-env NODE_ENV=development nodemon ./index.js"
   },
   "author": "Dante Souza e Souza",
   "license": "ISC",

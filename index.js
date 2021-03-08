@@ -1,13 +1,6 @@
-("use strict");
-
-const mysql = require("mysql");
-
-const fetch = require("node-fetch");
-
-
-
 const Hapi = require("@hapi/hapi");
-const { StatusCodes, ReasonPhrases } = require("http-status-codes");
+const getCharacter = require("./utils/apiOperations");
+const queryAllCharacters = require("./utils/dbOperations").queryAllCharacters;
 
 const init = async () => {
   const server = Hapi.server({
@@ -15,39 +8,23 @@ const init = async () => {
     host: "localhost",
   });
 
+  // rota principal que lista todos os usuários cadastrados
   server.route({
     method: "GET",
     path: "/",
-    handler: (request, h) => {
-      return {
-        now: new Date(Date.now()).toLocaleString("pt-BR", {
-          timeZone: "America/Sao_Paulo",
-        }),
-        message: "Tuc de Tuc!",
-      };
+    handler: async (request, h) => {
+      return await queryAllCharacters();
     },
   });
 
+  // rota que lista usuário pelo id fornecido
   server.route({
     method: "GET",
     path: "/person/{id?}",
-    handler: (request, h) => {
-
-      getPerson(request.params.id);
-      const user = getPerson(request.params.id)
-        ? request.params.id
-        : "Aluno Accenture";
-      return `Hello ${user}`;
-    },
-  });
-
-  server.route({
-    method: "GET",
-    path: "/query",
-    handler: (request, h) => {
-      const queryParam = request.query;
-
-      return { value: queryParam };
+    handler: async (request, h) => {
+      const response = await getCharacter(request.params.id);
+      console.log("Saved data: \n", response);
+      return { person: response };
     },
   });
 
@@ -61,77 +38,3 @@ process.on("unhandledRejection", (err) => {
 });
 
 init();
-
-function getPerson(id) {
-  fetch(`https://swapi.dev/api/people/${id}`)
-    .then((response) =>  {
-      if (!response.ok) {
-        throw new Error(`Person of id ${id} not found`);
-      } else {
-        return response.json();
-      }
-    })
-    .then((person) => {
-      const species = person.species;
-      const homeUrl = person.homeworld;
-      const films = person.films;
-      const vehicles = person.vehicles;
-      const starships = person.starships;
-      fetch(homeUrl)
-        .then((response) => response.json())
-        .then((world) => {
-          person.homeworld = world.name;
-        })
-        .catch((err) => console.log(err));
-      Promise.all(
-        films.map((url) => fetch(url).then((response) => response.json()))
-      )
-        .then((data) => {
-          data.forEach((films, index) => (person.films[index] = films.title));
-          Promise.all(
-            vehicles.map((url) =>
-              fetch(url).then((response) => response.json())
-            )
-          )
-            .then((data) => {
-              data.forEach(
-                (vehicles, index) => (person.vehicles[index] = vehicles.name)
-              );
-              Promise.all(
-                starships.map((url) =>
-                  fetch(url).then((response) => response.json())
-                )
-              )
-                .then((data) => {
-                  data.forEach(
-                    (starships, index) =>
-                      (person.starships[index] = starships.name)
-                  );
-                  Promise.all(
-                    species.map((url) =>
-                      fetch(url).then((response) => response.json())
-                    )
-                  )
-                    .then((data) => {
-                      data.forEach(
-                        (species, index) =>
-                          (person.species[index] = species.name)
-                      );
-                      console.log(person);
-                    })
-                    .catch((err) => console.log(err));
-                })
-                .catch((err) => console.log(err));
-            })
-            .catch((err) => console.log(err));
-        })
-        .catch((err) => console.log(err));
-    })
-    .catch((err) => console.log(err));
-}
-/* 
-try {
-  getPerson(20);
-} catch (error) {
-  console.log("My error:" + error);
-} */
