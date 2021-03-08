@@ -49,7 +49,7 @@ const dbOps = {
             //se houver personagem duplicado, retona erro no console
             if (err) {
               if (err.code == "ER_DUP_ENTRY") {
-                resolve(`The character with ${id} already exists!`);
+                resolve(`The character with id ${id} already exists!`);
               } else {
                 reject(err);
               }

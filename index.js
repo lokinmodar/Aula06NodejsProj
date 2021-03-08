@@ -20,11 +20,11 @@ const init = async () => {
   // rota que lista usuário pelo id fornecido
   server.route({
     method: "GET",
-    path: "/person/{id?}",
+    path: "/character/{id?}",
     handler: async (request, h) => {
       const response = await getCharacter(request.params.id);
       console.log("Saved data: \n", response);
-      return { person: response };
+      return { character: response };
     },
   });
 
